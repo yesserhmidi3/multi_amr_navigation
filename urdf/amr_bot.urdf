@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  URDF approximatif du SEER Robotics SLR-1000EU
+  Basé sur le manuel utilisateur V1.0 (2025.12)
+  
+  Paramètres clés :
+    - Châssis : 1330 x 952 x 290.5 mm
+    - Masse totale (avec batterie) : 265 kg
+    - 2 roues motrices différentielles, rayon=90mm, écartement=703mm
+    - 4 roues folles (omni/caster), rayon=50mm (estimé)
+    - Plateforme de levage : 1300 x 920 x 20mm, course=60mm
+    - Navigation laser height : 185 mm
+
+  AVERTISSEMENT :
+    Les valeurs d'inertie et certaines géométries sont estimées.
+    Les fichiers mesh (.dae/.stl) ne sont PAS inclus (non fournis par le fabricant).
+    Ce fichier est un point de départ — à affiner avec les données CAD officielles.
+-->
+
+<robot name="slr_1000eu">
+
+  <!-- ============================================================
+       MATERIALS
+  ============================================================ -->
+  <material name="dark_gray">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="cool_gray">
+    <color rgba="0.5 0.5 0.55 1.0"/>
+  </material>
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  <material name="red">
+    <color rgba="0.8 0.1 0.1 1.0"/>
+  </material>
+  <material name="yellow">
+    <color rgba="1.0 0.85 0.0 1.0"/>
+  </material>
+
+  <!-- ============================================================
+       BASE LINK  (centre de l'axe différentiel, au sol)
+       Origine : centre géométrique de l'axe des 2 roues motrices
+  ============================================================ -->
+  <link name="base_link">
+    <!-- Repère de référence ROS convention : X=avant, Y=gauche, Z=haut -->
+  </link>
+
+  <!-- ============================================================
+       CHASSIS LINK
+       Châssis principal : 1330 x 952 x 290.5 mm
+       Masse totale répartie : ~200 kg (châssis + batterie + électronique)
+       Centre de masse estimé à mi-hauteur
+  ============================================================ -->
+  <link name="chassis">
+    <visual>
+      <origin xyz="0.0 0.0 0.1453" rpy="0 0 0"/>
+      <geometry>
+        <!-- 1330mm x 952mm x 290.5mm => coins arrondis non modélisés -->
+        <box size="1.330 0.952 0.2905"/>
+      </geometry>
+      <material name="cool_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.1453" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.330 0.952 0.2905"/> 
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- masse châssis + batterie + électronique ≈ 200 kg -->
+      <!-- Ixx = m/12*(h²+d²), Iyy = m/12*(w²+d²), Izz = m/12*(w²+h²) -->
+      <!-- w=0.952, h=0.290, d=1.330 -->
+      <mass value="200.0"/>
+      <origin xyz="0.0 0.0 0.1453" rpy="0 0 0"/>
+      <inertia
+        ixx="6.556"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="60.27"
+        iyz="0.0"
+        izz="63.38"/>
+    </inertial>
+  </link>
+
+  <joint name="base_to_chassis" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+    <origin xyz="0.0 0.0 0.090" rpy="0 0 0"/>
+    <!-- L'axe différentiel est à hauteur rayon roue = 90mm du sol -->
+  </joint>
+
+  <!-- ============================================================
+       ROUE MOTRICE GAUCHE
+       Rayon : 90 mm  |  Largeur estimée : 80 mm
+       Masse estimée : 8 kg
+       Axe Y à 703/2 = 351.5 mm du centre
+  ============================================================ -->
+  <link name="wheel_left">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.090" length="0.080"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.090" length="0.080"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="8.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <!-- Cylindre plein : Ixx=Iyy = m/12*(3r²+h²), Izz = m/2*r² -->
+      <inertia
+        ixx="0.0618"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.0618"
+        iyz="0.0"
+        izz="0.0324"/>
+    </inertial>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_left"/>
+    <origin xyz="0.0 0.3515 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.1" friction="0.5"/>
+    <limit effort="100" velocity="20"/>
+  </joint>
+
+  <!-- ============================================================
+       ROUE MOTRICE DROITE
+  ============================================================ -->
+  <link name="wheel_right">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.090" length="0.080"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.090" length="0.080"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="8.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.0618"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.0618"
+        iyz="0.0"
+        izz="0.0324"/>
+    </inertial>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_right"/>
+    <origin xyz="0.0 -0.3515 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.1" friction="0.5"/>
+    <limit effort="100" velocity="20"/>
+  </joint>
+
+  <!-- ============================================================
+       ROUES FOLLES / OMNI (4x)
+       Positionnement estimé aux 4 coins du châssis
+       Rayon estimé : 50 mm, masse : 2 kg chacune
+       
+       Positions (X, Y) estimées :
+         Avant-gauche  : (+0.45,  +0.38)
+         Avant-droite  : (+0.45,  -0.38)
+         Arrière-gauche: (-0.45,  +0.38)
+         Arrière-droite: (-0.45,  -0.38)
+  ============================================================ -->
+
+  <!-- Roue folle avant-gauche -->
+  <link name="caster_front_left">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <!-- Sphère : I = 2/5 * m * r² -->
+      <inertia
+        ixx="0.002"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.002"
+        iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_front_left_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_front_left"/>
+    <origin xyz="0.450 0.380 -0.040" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Roue folle avant-droite -->
+  <link name="caster_front_right">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.002"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.002"
+        iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_front_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_front_right"/>
+    <origin xyz="0.450 -0.380 -0.040" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Roue folle arrière-gauche -->
+  <link name="caster_rear_left">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.002"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.002"
+        iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_rear_left_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_rear_left"/>
+    <origin xyz="-0.450 0.380 -0.040" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Roue folle arrière-droite -->
+  <link name="caster_rear_right">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="1.5708 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.050"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.002"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.002"
+        iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_rear_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_rear_right"/>
+    <origin xyz="-0.450 -0.380 -0.040" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============================================================
+       PLATEFORME DE LEVAGE (jack/lifting platform)
+       Dimensions : 1300 x 920 mm, épaisseur 20 mm (estimée)
+       Course : 0 à 60 mm  |  Masse estimée : 35 kg
+       Axe de levage : Z (vertical)
+  ============================================================ -->
+  <link name="lifting_platform">
+    <visual>
+      <origin xyz="0.0 0.0 0.010" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.300 0.920 0.020"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.010" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.300 0.920 0.020"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="35.0"/>
+      <origin xyz="0.0 0.0 0.010" rpy="0 0 0"/>
+      <!-- Boîte : Ixx = m/12*(h²+d²), Iyy = m/12*(w²+d²), Izz = m/12*(w²+h²) -->
+      <inertia
+        ixx="2.614"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="5.096"
+        iyz="0.0"
+        izz="7.586"/>
+    </inertial>
+  </link>
+
+  <joint name="lifting_joint" type="prismatic">
+    <parent link="chassis"/>
+    <!-- Position initiale : dessus du châssis (290.5mm) - offset chassis origin (145.3mm) -->
+    <child link="lifting_platform"/>
+    <origin xyz="0.0 0.0 0.1453" rpy="0 0 0"/>
+    <!-- Le dessus du châssis est à chassis_origin + 0.1453 = 0.290m -->
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="0.060" effort="5000" velocity="0.05"/>
+    <dynamics damping="500.0" friction="100.0"/>
+  </joint>
+
+  <!-- ============================================================
+       LASER DE NAVIGATION (SLAM) - AVANT
+       SICK nanoScan3 HV
+       Position : hauteur 185 mm du sol, à l'avant du robot
+       Angle de scan : 270°
+       Distance détection : 40 m
+  ============================================================ -->
+  <link name="laser_front">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.060"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+     
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.060"/>
+      </geometry>
+    </collision>
+    
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.001"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.001"
+        iyz="0.0"
+        izz="0.001"/>
+    </inertial>
+  </link>
+
+  <joint name="laser_front_joint" type="fixed">
+    <parent link="base_link"/>
+    <!-- 
+      Hauteur laser : 185mm du sol => 185mm - 90mm(rayon roue) = 95mm au-dessus de base_link
+      Position X avant : distance laser-axe différentiel = 518.3mm (manuel §3.3)
+      Orientation : scan vers l'avant (pas de rotation par défaut)
+    -->
+    <child link="laser_front"/>
+    <origin xyz="0.5183 0.0 0.095" rpy="0 0 0"/> 
+    <!-- <origin xyz="0.73 0.0 0.095" rpy="0 0 0"/> --> <!-- pushed it a little so it won't be blocked by the chassis-->
+  </joint>
+
+  <!-- ============================================================
+       LASER DE NAVIGATION (SLAM) - ARRIÈRE
+       SICK nanoScan3 HV (2 lidars au total)
+       Symétrique par rapport au laser avant
+  ============================================================ -->
+  <link name="laser_rear">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.060"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.060"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.001"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.001"
+        iyz="0.0"
+        izz="0.001"/>
+    </inertial>
+  </link>
+
+  <joint name="laser_rear_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_rear"/>
+    <!-- Arrière du robot, tourné à 180° (scan vers l'arrière) -->
+
+    
+    <origin xyz="-0.5183 0.0 0.095" rpy="0 0 3.14159"/>
+        
+    <!-- <origin xyz="-0.73 0.0 0.095" rpy="0 0 3.14159"/> --> <!-- pushed it a little so it won't be blocked by the chassis-->
+  </joint>
+
+  <!-- ============================================================
+       IMU (estimé au centre du châssis)
+  ============================================================ -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia
+        ixx="0.000001"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.000001"
+        iyz="0.0"
+        izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0.0 0.0 0.100" rpy="0 0 0"/>
+  </joint>
+
+
+
+
+  
+
+  <!-- ============================================================
+       FRAME FOOTPRINT (projection au sol)
+       Convention ROS Navigation
+  ============================================================ -->
+  <link name="base_footprint"/>
+
+  
+  <!-- <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.090" rpy="0 0 0"/>
+    
+  </joint>--> <!-- base_link est à 90mm du sol (rayon des roues motrices) -->
+
+  <!-- 
+  <joint name="base_link_to_footprint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_footprint"/>
+    <origin xyz="0.0 0.0 -0.090" rpy="0 0 0"/>
+  </joint>-->
+
+  <!-- added-->
+  <joint name="base_footprint_to_link" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.090" rpy="0 0 0"/> 
+  </joint>
+  
+
+  
+
+  <!-- gazebo plugins added :-->
+<gazebo>
+
+    <!-- 
+    <plugin
+      filename="gz-sim-diff-drive-system"
+      name="gz::sim::systems::DiffDrive">
+      <publish_odom>true</publish_odom> 
+      <publish_odom_tf>true</publish_odom_tf> 
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+
+      <wheel_separation>0.703</wheel_separation> 
+      <wheel_diameter>0.180</wheel_diameter>
+      <max_wheel_torque>100</max_wheel_torque>
+
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+    </plugin> -->
+
+    <!--
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <publish_odom>true</publish_odom> 
+      <publish_odom_tf>true</publish_odom_tf> 
+      <odom_publish_frequency>50</odom_publish_frequency> 
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+
+
+      <wheel_separation>0.703</wheel_separation>
+      <wheel_diameter>0.180</wheel_diameter>
+      <max_wheel_torque>100</max_wheel_torque>
+
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+    </plugin> -->
+
+    <!-- new-->
+    <!-- fixed it , solution from : https://www.reddit.com/r/ROS/comments/1f4hrjk/rviz_is_faster_than_gazebo_any_idea_why_this/ -->
+     <!-- "wheel_diameter" to "wheel_radius"
+      With the gz_sim diffdrive plugin, it uses radius instead of diameter so since the diameter is set (but not accepted by the plugin) it defaults to a different value.-->
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+
+      <wheel_separation>0.703</wheel_separation>
+      <wheel_radius>0.090</wheel_radius> <max_wheel_torque>200</max_wheel_torque>
+      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <min_linear_acceleration>-1.0</min_linear_acceleration>
+      <max_angular_acceleration>2.0</max_angular_acceleration>
+      <min_angular_acceleration>-2.0</min_angular_acceleration>
+      
+      <max_linear_velocity>5.0</max_linear_velocity>
+      <min_linear_velocity>-5.0</min_linear_velocity>
+      <max_angular_velocity>5.0</max_angular_velocity>
+      <min_angular_velocity>-5.0</min_angular_velocity>
+
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <publish_odom>true</publish_odom> 
+      <publish_odom_tf>true</publish_odom_tf> 
+      <odom_publish_frequency>25</odom_publish_frequency>
+    </plugin>
+  </gazebo>
+
+
+  
+
+  <!--Mouvement -->
+  <gazebo reference="caster_front_left"><mu1>0.01</mu1><mu2>0.01</mu2></gazebo>
+  <gazebo reference="caster_front_right"><mu1>0.01</mu1><mu2>0.01</mu2></gazebo>
+  <gazebo reference="caster_rear_left"><mu1>0.01</mu1><mu2>0.01</mu2></gazebo>
+  <gazebo reference="caster_rear_right"><mu1>0.01</mu1><mu2>0.01</mu2></gazebo>
+
+
+  
+  <!--friction -->
+  <!--<gazebo reference="wheel_left"> 
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <fdir1>1 0 0</fdir1>
+  </gazebo>
+  <gazebo reference="wheel_right">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <fdir1>1 0 0</fdir1>
+  </gazebo>-->
+
+  <!-- Lidar plugin-->
+
+    <gazebo reference="laser_front">
+    <sensor name="front_lidar" type="gpu_lidar">
+      <always_on>true</always_on>
+      <visualize>true</visualize> 
+      <update_rate>15</update_rate>
+      <topic>scan_front</topic>
+      <gz_frame_id>laser_front</gz_frame_id>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>540</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-2.35619</min_angle>
+            <max_angle>2.35619</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>40.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="laser_rear">
+    <sensor name="rear_lidar" type="gpu_lidar">
+      <always_on>true</always_on>
+      <visualize>true</visualize> <update_rate>15</update_rate>
+      <topic>scan_rear</topic>
+      <gz_frame_id>laser_rear</gz_frame_id>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>540</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-2.35619</min_angle>
+            <max_angle>2.35619</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>40.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <topic>imu</topic>
+      <gz_frame_id>imu_link</gz_frame_id>
+    </sensor>
+  </gazebo>
+  
+  <gazebo>
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+      <publish_model_pose>true</publish_model_pose>
+      <publish_nested_model_pose>false</publish_nested_model_pose>
+      <publish_link_pose>false</publish_link_pose>
+      <publish_visual_pose>false</publish_visual_pose>
+      <publish_collision_pose>false</publish_collision_pose>
+      <use_pose_vector_msg>false</use_pose_vector_msg>
+      <update_frequency>50</update_frequency>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>joint_states</topic>
+    </plugin>
+  </gazebo>
+
+</robot>

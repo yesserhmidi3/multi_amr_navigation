@@ -1,0 +1,14 @@
+# Python build and cache artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# IDE and editor backups
+.vscode/
+.idea/
+*.swp
+*~
