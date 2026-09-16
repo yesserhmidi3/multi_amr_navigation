@@ -79,7 +79,7 @@ ros2 launch multi_amr_navigation slam_launch.py
 
 ([`slam_launch.py`](launch/slam_launch.py)) launches the SLAM stack, which builds a 2D occupancy grid map from the robot's simulated LiDAR data. Once the map is complete, it's saved and used as a **static map** for localization (`nav2_amcl`) during normal navigation — SLAM is no longer run at runtime.
 
-<!-- ![SLAM mapping](media/slam_mapping.gif) -->
+![SLAM mapping](./media/slam_mapping.gif)
 
 ### 2. Single-Robot Navigation
 
@@ -93,7 +93,7 @@ Once single-robot navigation was validated, the architecture was extended to sup
 - Each robot publishes its own position/footprint so the others can treat it as a dynamic obstacle during navigation.
 - The architecture was tested with up to **4 robots**, but validation was ultimately carried out with **2 robots**, due to the hardware limitations of the development machine (multi-robot simulation is computationally demanding).
 
-<!-- ![Multi-robot navigation](media/multi_robot_nav.gif) -->
+![Multi-robot navigation](./media/multi_robot_nav.gif)
 
 ### 4. Fire Alarm Scenario
 
@@ -109,7 +109,7 @@ When the alarm is triggered:
 
 Speed limits inspired by ISO 3691-4 are also applied depending on the robot's proximity to walls/obstacles and the width of the surrounding area.
 
-<!-- ![Fire alarm scenario](media/fire_alarm_scenario.gif) -->
+![Fire alarm scenario](./media/fire_alarm_scenario.gif)
 
 ## Getting Started
 
