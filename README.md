@@ -4,7 +4,6 @@ A ROS2 (Jazzy) project for simulating a fleet of Autonomous Mobile Robots (AMRs)
 
 This project was developed as part of a summer internship at **Timelec** (Socomec Group), based on a fleet of **SEER SLR-1000EU** robots.
 
-<!-- ![Gazebo simulation](media/gazebo_demo.gif) -->
 
 ## Table of Contents
 
